@@ -5,6 +5,8 @@ using System.Reflection;
 using System.Linq;
 using UnityEngine.TextCore.Text;
 
+using MaterialReferenceManager = TMPro.MaterialReferenceManager;
+
 namespace Mx
 {
     public class TmpUtil
