@@ -63,7 +63,7 @@ namespace Mx
             #region xml
             public void DoXMLPase(ref string content)
             {
-                XmlDocument xml = new XmlDocument();
+                XmlDocument xml = new();
                 xml.LoadXml(content);
                 XmlElement rootNode = xml.DocumentElement;
 
@@ -120,10 +120,12 @@ namespace Mx
                     for (int i = 0; i < kerns.Count; i++)
                     {
                         XmlNode kerningNode = kerns[i];
-                        kernings[i] = new Kerning();
-                        kernings[i].first = ToInt(kerningNode, "first");
-                        kernings[i].second = ToInt(kerningNode, "second");
-                        kernings[i].amount = ToInt(kerningNode, "amount");
+                        kernings[i] = new Kerning
+                        {
+                            first = ToInt(kerningNode, "first"),
+                            second = ToInt(kerningNode, "second"),
+                            amount = ToInt(kerningNode, "amount")
+                        };
                     }
                 }
             }
@@ -157,7 +159,7 @@ namespace Mx
 
                 // don't use count of chars, count is incorrect if has space 
                 //ReadTextCharCount(ref lines[3]);
-                List<CharacterInfo> list = new List<CharacterInfo>();
+                List<CharacterInfo> list = new();
                 int i = 2 + textureNames.Length;
                 int l = lines.Length;
                 for (; i < l; i++)
@@ -177,8 +179,7 @@ namespace Mx
                 // kernings
                 if (i < l)
                 {
-                    int count = 0;
-                    if (ReadTextCount(ref lines[i++], out count))
+                    if (ReadTextCount(ref lines[i++], out int count))
                     {
                         int start = i;
                         kernings = new Kerning[count];
@@ -193,9 +194,7 @@ namespace Mx
 
             private void ReadTextInfo(ref string line)
             {
-                string[] keys;
-                string[] values;
-                SplitParts(line, out keys, out values);
+                SplitParts(line, out string[] keys, out string[] values);
                 for (int i = keys.Length - 1; i >= 0; i--)
                 {
                     switch (keys[i])
@@ -208,9 +207,7 @@ namespace Mx
 
             private void ReadTextCommon(ref string line)
             {
-                string[] keys;
-                string[] values;
-                SplitParts(line, out keys, out values);
+                SplitParts(line, out string[] keys, out string[] values);
                 for (int i = keys.Length - 1; i >= 0; i--)
                 {
                     switch (keys[i])
@@ -226,9 +223,7 @@ namespace Mx
 
             private void ReadTextPage(ref string line)
             {
-                string[] keys;
-                string[] values;
-                SplitParts(line, out keys, out values);
+                SplitParts(line, out string[] keys, out string[] values);
                 string textureName = null;
                 int pageId = -1;
                 for (int i = keys.Length - 1; i >= 0; i--)
@@ -244,9 +239,7 @@ namespace Mx
 
             private bool ReadTextCount(ref string line, out int count)
             {
-                string[] keys;
-                string[] values;
-                SplitParts(line, out keys, out values);
+                SplitParts(line, out string[] keys, out string[] values);
                 count = 0;
                 for (int i = keys.Length - 1; i >= 0; i--)
                 {
@@ -263,9 +256,7 @@ namespace Mx
             private bool ReadTextChar(int idx, ref string line, ref List<CharacterInfo> list)
             {
                 if (!line.StartsWith("char")) return false;
-                string[] keys;
-                string[] values;
-                SplitParts(line, out keys, out values);
+                SplitParts(line, out string[] keys, out string[] values);
                 int id = 0, x = 0, y = 0, w = 0, h = 0;
                 int xo = 0, yo = 0, xadvance = 0, page = 0;
                 for (int i = keys.Length - 1; i >= 0; i--)
@@ -287,18 +278,15 @@ namespace Mx
                 var chara = new TMP_Character((uint)id, glyph);
                 glyphs.Add(glyph);
                 chars.Add(chara);
-                lut.Add((uint)id, chara);
-                //list.Add(CreateCharInfo(id, x, y, w, h, xo, yo, xadvance, page));
+                lut.TryAdd((uint)id, chara);
                 return true;
             }
 
             private bool ReadTextKerning(int idx, ref string line, ref List<CharacterInfo> list)
             {
                 if (!line.StartsWith("kerning")) return false;
-                string[] keys;
-                string[] values;
-                SplitParts(line, out keys, out values);
-                Kerning kerning = new Kerning();
+                SplitParts(line, out string[] keys, out string[] values);
+                Kerning kerning = new();
                 for (int i = keys.Length - 1; i >= 0; i--)
                 {
                     switch (keys[i])
@@ -335,12 +323,13 @@ namespace Mx
             private Glyph CreateCharGlyph(uint idx, int x, int y, int w, int h, int xo, int yo, int xadvance, int page = 0)
             {
 
-                Rect vert = new Rect();
-                vert.x = x;
-                vert.y = y - lineHeight;
-                vert.width = w;
-                vert.height = h;
-                vert.y = textureHeight + vert.y;
+                Rect vert = new()
+                {
+                    x = x,
+                    y = textureHeight - y - h,
+                    width = w,
+                    height = h
+                };
                 //vert.height = -vert.height;
 
 
@@ -360,7 +349,6 @@ namespace Mx
         {
             foreach (string str in importedAssets)
             {
-                //Debug.Log("Reimported Asset: " + str);
                 DoImportBitmapFont(str);
             }
         }
@@ -392,7 +380,6 @@ namespace Mx
                 font = ScriptableObject.CreateInstance<TMP_FontAsset>();
                 AssetDatabase.CreateAsset(font, fontPath);
                 AssetDatabase.WriteImportSettingsIfDirty(fontPath);
-                //AssetDatabase.ImportAsset(fontPath);
             }
 
             font.version = "1.1.0";
@@ -411,28 +398,30 @@ namespace Mx
             font.atlasWidth = textures.width;
             font.atlasHeight = textures.height;
             font.atlasPadding = 0;
-            font.atlasRenderMode = GlyphRenderMode.COLOR_HINTED;
+            font.atlasRenderMode = GlyphRenderMode.COLOR;
 
-            var faceInfo = new FaceInfo();
-            faceInfo.baseline = parse.lineBaseHeight;
-            faceInfo.lineHeight = parse.lineHeight;
-            faceInfo.ascentLine = parse.lineHeight;
-
-            faceInfo.pointSize = Math.Abs(parse.fontSize);
+            var faceInfo = new FaceInfo
+            {
+                baseline = parse.lineBaseHeight,
+                lineHeight = parse.lineHeight,
+                ascentLine = Math.Abs(parse.fontSize),
+                pointSize = Math.Abs(parse.fontSize),
+            };
 
             font.faceInfo = faceInfo;
-            // 
-            // AssetDatabase.AddObjectToAsset(textures, font);
+
 
             Material material = AssetDatabase.LoadAssetAtPath(fontPath, typeof(Material)) as Material;
             if (font.material == null)
             {
-                material = new Material(Shader.Find("TextMeshPro/Bitmap Custom Atlas"));
-
-                material.name = fntName + " Material";
-
+                material = new Material(Shader.Find("TextMeshPro/Bitmap Custom Atlas Opt"))
+                {
+                    name = fntName + " Material"
+                };
                 AssetDatabase.AddObjectToAsset(material, fontPath);
             }
+            else
+                material.shader = Shader.Find("TextMeshPro/Bitmap Custom Atlas Opt");
 
 
             font.InitializeDictionaryLookupTables();
@@ -452,13 +441,13 @@ namespace Mx
             EditorUtility.SetDirty(material);
 
             font.material = material;
+            font.ReadFontAssetDefinition();
+            EditorUtility.SetDirty(font);
             AssetDatabase.SaveAssets();
         }
 
         private static Texture2D DoImportTextures(FntParse parse, string rootPath, TextAsset fnt)
         {
-            int len = parse.textureNames.Length;
-
             // The texture name of the file generated by ShoeBox uses an absolute path
             string textureName = Path.GetFileName(parse.textureNames[0]);
             string texPath = string.Format("{0}/{1}", rootPath, textureName);
@@ -467,7 +456,6 @@ namespace Mx
             if (texture == null)
             {
                 Debug.LogErrorFormat(fnt, "{0}: not found '{1}'.", typeof(BFImporter), texPath);
-
             }
 
             TextureImporter texImporter = AssetImporter.GetAtPath(texPath) as TextureImporter;

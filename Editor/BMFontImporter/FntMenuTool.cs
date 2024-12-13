@@ -4,6 +4,7 @@ using UnityEditor;
 using System.IO;
 
 
+
 namespace Mx
 {
     public class BFMenuTool
@@ -16,21 +17,22 @@ namespace Mx
             BFImporter.DoImportBitmapFont(AssetDatabase.GetAssetPath(selected));
         }
 
-        [MenuItem("Tools/Bitmap Font/Rebuild All Bitmap Font", true)]
-        public static bool CheckRebuildAllFont()
-        {
-            return !EditorApplication.isPlaying;
-        }
+        // [MenuItem("Tools/Bitmap Font/Rebuild All Bitmap Font", true)]
+        // public static bool CheckRebuildAllFont()
+        // {
+        //     return !EditorApplication.isPlaying;
+        // }
 
-        [MenuItem("Tools/Bitmap Font/Rebuild All Bitmap Font")]
+        [MenuItem("Tools/Bitmap Font/Rebuild All Bitmap Font TMP")]
         public static void RebuildAllFont()
         {
             string dataPath = Application.dataPath;
-            int startPos = dataPath.Length - "Assets".Length;
             string[] files = Directory.GetFiles(Application.dataPath, "*.fnt", SearchOption.AllDirectories);
-            for (int i = 0; i < files.Length; i++)
-            {
-                BFImporter.DoImportBitmapFont(files[i].Substring(startPos));
+            foreach (var path in files)
+            {                
+                var f = Path.GetRelativePath(dataPath, path);
+                UnityEngine.Debug.Log($">>>>> {f}");
+                BFImporter.DoImportBitmapFont(Path.Combine("Assets", f));
             }
         }
     }
